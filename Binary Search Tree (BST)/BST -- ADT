@@ -1,0 +1,219 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition of a node in the BST
+typedef struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+} Node;
+
+// Function prototypes
+Node* createNode(int data);
+Node* insert(Node* root, int data);
+Node* delete(Node* root, int data);
+Node* find(Node* root, int data);
+Node* findMin(Node* root);
+Node* findMax(Node* root);
+void inorderTraversal(Node* root);
+void preorderTraversal(Node* root);   // New function prototype for pre-order traversal
+void postorderTraversal(Node* root);  // New function prototype for post-order traversal
+void freeTree(Node* root);
+
+int main() {
+    Node* root = NULL;
+    int choice, value;
+
+    do {
+        printf("\nBinary Search Tree Menu:\n");
+        printf("1. Insert\n");
+        printf("2. Delete\n");
+        printf("3. Find\n");
+        printf("4. Find Minimum\n");
+        printf("5. Find Maximum\n");
+        printf("6. Inorder Traversal\n");
+        printf("7. Preorder Traversal\n");   // New menu option
+        printf("8. Postorder Traversal\n");  // New menu option
+        printf("9. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to insert: ");
+                scanf("%d", &value);
+                root = insert(root, value);
+                break;
+            case 2:
+                printf("Enter value to delete: ");
+                scanf("%d", &value);
+                root = delete(root, value);
+                break;
+            case 3:
+                printf("Enter value to find: ");
+                scanf("%d", &value);
+                Node* foundNode = find(root, value);
+                if (foundNode) {
+                    printf("Value %d found in the tree.\n", value);
+                } else {
+                    printf("Value %d not found in the tree.\n", value);
+                }
+                break;
+            case 4:
+                {
+                    Node* minNode = findMin(root);
+                    if (minNode) {
+                        printf("Minimum value in the tree: %d\n", minNode->data);
+                    } else {
+                        printf("The tree is empty.\n");
+                    }
+                }
+                break;
+            case 5:
+                {
+                    Node* maxNode = findMax(root);
+                    if (maxNode) {
+                        printf("Maximum value in the tree: %d\n", maxNode->data);
+                    } else {
+                        printf("The tree is empty.\n");
+                    }
+                }
+                break;
+            case 6:
+                printf("Inorder Traversal: ");
+                inorderTraversal(root);
+                printf("\n");
+                break;
+            case 7:
+                printf("Preorder Traversal: ");
+                preorderTraversal(root);
+                printf("\n");
+                break;
+            case 8:
+                printf("Postorder Traversal: ");
+                postorderTraversal(root);
+                printf("\n");
+                break;
+            case 9:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 9);
+
+    freeTree(root); // Free the allocated memory
+    return 0;
+}
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert a new value in the BST
+Node* insert(Node* root, int data) {
+    if (root == NULL) {
+        return createNode(data);
+    }
+    if (data < root->data) {
+        root->left = insert(root->left, data);
+    } else if (data > root->data) {
+        root->right = insert(root->right, data);
+    }
+    return root;
+}
+
+// Function to delete a value from the BST
+Node* delete(Node* root, int data) {
+    if (root == NULL) {
+        return root;
+    }
+    if (data < root->data) {
+        root->left = delete(root->left, data);
+    } else if (data > root->data) {
+        root->right = delete(root->right, data);
+    } else {
+        if (root->left == NULL) {
+            Node* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            Node* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        Node* temp = findMin(root->right);
+        root->data = temp->data;
+        root->right = delete(root->right, temp->data);
+    }
+    return root;
+}
+
+// Function to find a value in the BST
+Node* find(Node* root, int data) {
+    if (root == NULL || root->data == data) {
+        return root;
+    }
+    if (data < root->data) {
+        return find(root->left, data);
+    }
+    return find(root->right, data);
+}
+
+// Function to find the minimum value in the BST
+Node* findMin(Node* root) {
+    while (root && root->left != NULL) {
+        root = root->left;
+    }
+    return root;
+}
+
+// Function to find the maximum value in the BST
+Node* findMax(Node* root) {
+    while (root && root->right != NULL) {
+        root = root->right;
+    }
+    return root;
+}
+
+// Function for inorder traversal of the BST
+void inorderTraversal(Node* root) {
+    if (root != NULL) {
+        inorderTraversal(root->left);
+        printf("%d ", root->data);
+        inorderTraversal(root->right);
+    }
+}
+
+// Function for preorder traversal of the BST
+void preorderTraversal(Node* root) {
+    if (root != NULL) {
+        printf("%d ", root->data);
+        preorderTraversal(root->left);
+        preorderTraversal(root->right);
+    }
+}
+
+// Function for postorder traversal of the BST
+void postorderTraversal(Node* root) {
+    if (root != NULL) {
+        postorderTraversal(root->left);
+        postorderTraversal(root->right);
+        printf("%d ", root->data);
+    }
+}
+
+// Function to free the memory allocated for the BST
+void freeTree(Node* root) {
+    if (root != NULL) {
+        freeTree(root->left);
+        freeTree(root->right);
+        free(root);
+    }
+}
