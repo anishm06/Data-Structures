@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_TASKS 100
+
+// Structure for a task
+typedef struct {
+    char description[100];
+    int priority; // Higher value means higher priority
+} Task;
+
+// Structure for a max heap
+typedef struct {
+    Task tasks[MAX_TASKS];
+    int size;
+} MaxHeap;
+
+// Function prototypes
+void initializeHeap(MaxHeap* heap);
+void addTask(MaxHeap* heap, char* description, int priority);
+Task getNextTask(MaxHeap* heap);
+void heapifyDown(MaxHeap* heap, int i);
+void displayTasks(MaxHeap* heap);
+
+int main() {
+    MaxHeap toDoList;
+    initializeHeap(&toDoList);
+
+    int choice;
+    char description[100];
+    int priority;
+
+    while (1) {
+        printf("\nTo-Do List Menu:\n");
+        printf("1. Add Task\n");
+        printf("2. Get Next Task\n");
+        printf("3. Display All Tasks\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar();  // to consume newline after scanf
+
+        switch (choice) {
+            case 1:
+                printf("Enter task description: ");
+                fgets(description, sizeof(description), stdin);
+                description[strcspn(description, "\n")] = '\0';  // remove newline
+                printf("Enter priority (higher number = higher priority): ");
+                scanf("%d", &priority);
+                addTask(&toDoList, description, priority);
+                break;
+            case 2:
+                if (toDoList.size == 0) {
+                    printf("No tasks in the to-do list.\n");
+                } else {
+                    Task nextTask = getNextTask(&toDoList);
+                    printf("Next task: %s (Priority: %d)\n", nextTask.description, nextTask.priority);
+                }
+                break;
+            case 3:
+                displayTasks(&toDoList);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                return 0;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+// Initialize the heap
+void initializeHeap(MaxHeap* heap) {
+    heap->size = 0;
+}
+
+// Add a new task to the heap
+void addTask(MaxHeap* heap, char* description, int priority) {
+    if (heap->size >= MAX_TASKS) {
+        printf("The to-do list is full. Cannot add more tasks.\n");
+        return;
+    }
+
+    int i = heap->size;
+    heap->tasks[i].priority = priority;
+    strcpy(heap->tasks[i].description, description);
+    heap->size++;
+
+    // Heapify up to maintain max-heap property
+    while (i > 0 && heap->tasks[(i - 1) / 2].priority < heap->tasks[i].priority) {
+        // Swap with parent
+        Task temp = heap->tasks[i];
+        heap->tasks[i] = heap->tasks[(i - 1) / 2];
+        heap->tasks[(i - 1) / 2] = temp;
+        
+        i = (i - 1) / 2;
+    }
+}
+
+// Get and remove the highest-priority task
+Task getNextTask(MaxHeap* heap) {
+    if (heap->size == 0) {
+        printf("The to-do list is empty.\n");
+        Task emptyTask = {"", -1};
+        return emptyTask;
+    }
+
+    Task highestPriorityTask = heap->tasks[0];
+    heap->tasks[0] = heap->tasks[heap->size - 1];
+    heap->size--;
+
+    // Heapify down to maintain max-heap property
+    heapifyDown(heap, 0);
+
+    return highestPriorityTask;
+}
+
+// Heapify down to maintain max-heap property
+void heapifyDown(MaxHeap* heap, int i) {
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < heap->size && heap->tasks[left].priority > heap->tasks[largest].priority) {
+        largest = left;
+    }
+
+    if (right < heap->size && heap->tasks[right].priority > heap->tasks[largest].priority) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        Task temp = heap->tasks[i];
+        heap->tasks[i] = heap->tasks[largest];
+        heap->tasks[largest] = temp;
+
+        heapifyDown(heap, largest);
+    }
+}
+
+// Display all tasks in the heap
+void displayTasks(MaxHeap* heap) {
+    if (heap->size == 0) {
+        printf("No tasks in the to-do list.\n");
+        return;
+    }
+
+    printf("\nAll tasks in the to-do list:\n");
+    for (int i = 0; i < heap->size; i++) {
+        printf("Task: %s, Priority: %d\n", heap->tasks[i].description, heap->tasks[i].priority);
+    }
+}
