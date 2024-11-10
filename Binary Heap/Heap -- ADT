@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX_SIZE 100 // Maximum size of the heap
+
+typedef struct {
+    int data[MAX_SIZE];
+    int size;
+} MaxHeap;
+
+// Function prototypes
+void initializeHeap(MaxHeap* heap);
+void insert(MaxHeap* heap, int value);
+void deleteMax(MaxHeap* heap);
+int findMax(MaxHeap* heap);
+int findMin(MaxHeap* heap);
+void levelOrderTraversal(MaxHeap* heap);
+
+int main() {
+    MaxHeap heap;
+    initializeHeap(&heap);
+    int choice, value;
+
+    do {
+        printf("\nBinary Heap Menu:\n");
+        printf("1. Insert\n");
+        printf("2. Delete Max\n");
+        printf("3. Find Max\n");
+        printf("4. Find Min\n");
+        printf("5. Level Order Traversal\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to insert: ");
+                scanf("%d", &value);
+                insert(&heap, value);
+                break;
+            case 2:
+                deleteMax(&heap);
+                break;
+            case 3:
+                printf("Max value: %d\n", findMax(&heap));
+                break;
+            case 4:
+                printf("Min value: %d\n", findMin(&heap));
+                break;
+            case 5:
+                printf("Level Order Traversal: ");
+                levelOrderTraversal(&heap);
+                printf("\n");
+                break;
+            case 6:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 6);
+
+    return 0;
+}
+
+// Initialize the heap
+void initializeHeap(MaxHeap* heap) {
+    heap->size = 0;
+}
+
+// Function to insert an element into the Max-Heap
+void insert(MaxHeap* heap, int value) {
+    if (heap->size >= MAX_SIZE) {
+        printf("Heap overflow!\n");
+        return;
+    }
+    int i = heap->size;
+    heap->data[i] = value;
+    heap->size++;
+
+    // Up-heapify to maintain Max-Heap property
+    while (i != 0 && heap->data[(i - 1) / 2] < heap->data[i]) {
+        int temp = heap->data[i];
+        heap->data[i] = heap->data[(i - 1) / 2];
+        heap->data[(i - 1) / 2] = temp;
+        i = (i - 1) / 2;
+    }
+}
+
+// Function to delete the maximum element from the Max-Heap
+void deleteMax(MaxHeap* heap) {
+    if (heap->size <= 0) {
+        printf("Heap underflow!\n");
+        return;
+    }
+    heap->data[0] = heap->data[heap->size - 1];
+    heap->size--;
+
+    // Down-heapify to maintain Max-Heap property
+    int i = 0;
+    while ((2 * i + 1) < heap->size) {
+        int largest = i;
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+
+        if (left < heap->size && heap->data[left] > heap->data[largest])
+            largest = left;
+        if (right < heap->size && heap->data[right] > heap->data[largest])
+            largest = right;
+
+        if (largest != i) {
+            int temp = heap->data[i];
+            heap->data[i] = heap->data[largest];
+            heap->data[largest] = temp;
+            i = largest;
+        } else {
+            break;
+        }
+    }
+}
+
+// Function to find the maximum value in the Max-Heap
+int findMax(MaxHeap* heap) {
+    if (heap->size > 0) {
+        return heap->data[0];
+    } else {
+        printf("Heap is empty!\n");
+        return INT_MIN;
+    }
+}
+
+// Function to find the minimum value in the Max-Heap
+int findMin(MaxHeap* heap) {
+    if (heap->size == 0) {
+        printf("Heap is empty!\n");
+        return INT_MAX;
+    }
+    
+    // Search for the minimum value in the leaf nodes
+    int min = heap->data[heap->size / 2];
+    for (int i = (heap->size / 2) + 1; i < heap->size; i++) {
+        if (heap->data[i] < min) {
+            min = heap->data[i];
+        }
+    }
+    return min;
+}
+
+// Function for level-order traversal of the Max-Heap
+void levelOrderTraversal(MaxHeap* heap) {
+    for (int i = 0; i < heap->size; i++) {
+        printf("%d ", heap->data[i]);
+    }
+}
