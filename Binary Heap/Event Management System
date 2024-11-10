@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_EVENTS 100
+
+// Define the structure for an event
+typedef struct {
+    char name[50];
+    int priority; // Higher values indicate higher priority
+} Event;
+
+// Define the structure for a max heap
+typedef struct {
+    Event events[MAX_EVENTS];
+    int size;
+} MaxHeap;
+
+// Function prototypes
+void initializeHeap(MaxHeap* heap);
+void insertEvent(MaxHeap* heap, char* name, int priority);
+Event extractMax(MaxHeap* heap);
+void heapifyDown(MaxHeap* heap, int i);
+void displayEvents(MaxHeap* heap);
+
+int main() {
+    MaxHeap heap;
+    initializeHeap(&heap);
+
+    // Insert some sample events
+    insertEvent(&heap, "Music Concert", 5);
+    insertEvent(&heap, "Tech Conference", 8);
+    insertEvent(&heap, "Food Festival", 3);
+    insertEvent(&heap, "Art Exhibition", 6);
+
+    // Display all events
+    printf("All events:\n");
+    displayEvents(&heap);
+
+    // Extract the highest-priority event
+    Event topEvent = extractMax(&heap);
+    printf("\nHighest-priority event: %s (Priority: %d)\n", topEvent.name, topEvent.priority);
+
+    return 0;
+}
+
+// Initialize the max heap
+void initializeHeap(MaxHeap* heap) {
+    heap->size = 0;
+}
+
+// Insert an event into the max heap
+void insertEvent(MaxHeap* heap, char* name, int priority) {
+    if (heap->size >= MAX_EVENTS) {
+        printf("Heap is full. Cannot insert more events.\n");
+        return;
+    }
+
+    // Insert the new event at the end of the heap
+    int i = heap->size;
+    heap->events[i].priority = priority;
+    strcpy(heap->events[i].name, name);
+    heap->size++;
+
+    // Heapify up to maintain the max-heap property
+    while (i > 0 && heap->events[(i - 1) / 2].priority < heap->events[i].priority) {
+        // Swap the current node with its parent
+        Event temp = heap->events[i];
+        heap->events[i] = heap->events[(i - 1) / 2];
+        heap->events[(i - 1) / 2] = temp;
+
+        i = (i - 1) / 2;
+    }
+}
+
+// Extract the highest-priority event from the heap
+Event extractMax(MaxHeap* heap) {
+    if (heap->size <= 0) {
+        printf("Heap is empty.\n");
+        Event emptyEvent = {"", -1};
+        return emptyEvent;
+    }
+
+    // The root of the heap has the highest priority
+    Event maxEvent = heap->events[0];
+
+    // Move the last element to the root and decrease the size
+    heap->events[0] = heap->events[heap->size - 1];
+    heap->size--;
+
+    // Heapify down to maintain the max-heap property
+    heapifyDown(heap, 0);
+
+    return maxEvent;
+}
+
+// Heapify down to maintain max-heap property
+void heapifyDown(MaxHeap* heap, int i) {
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < heap->size && heap->events[left].priority > heap->events[largest].priority) {
+        largest = left;
+    }
+
+    if (right < heap->size && heap->events[right].priority > heap->events[largest].priority) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        // Swap
+        Event temp = heap->events[i];
+        heap->events[i] = heap->events[largest];
+        heap->events[largest] = temp;
+
+        heapifyDown(heap, largest);
+    }
+}
+
+// Display all events in the heap
+void displayEvents(MaxHeap* heap) {
+    for (int i = 0; i < heap->size; i++) {
+        printf("Event: %s, Priority: %d\n", heap->events[i].name, heap->events[i].priority);
+    }
+}
