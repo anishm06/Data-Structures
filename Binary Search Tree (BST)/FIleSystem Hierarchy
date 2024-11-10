@@ -1,0 +1,112 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Definition of a node in the filesystem BST
+typedef struct Node {
+    char name[50];
+    int isFile; // 0 for folder, 1 for file
+    struct Node* left;
+    struct Node* right;
+} Node;
+
+// Function prototypes
+Node* createNode(char* name, int isFile);
+Node* insert(Node* root, char* name, int isFile);
+Node* search(Node* root, char* name);
+void displayTree(Node* root, int level);
+void freeTree(Node* root);
+
+int main() {
+    Node* root = NULL;
+
+    // Sample file and folder insertion
+    root = insert(root, "Documents", 0);     // Folder
+    root = insert(root, "Music", 0);         // Folder
+    root = insert(root, "Photos", 0);        // Folder
+    root = insert(root, "resume.pdf", 1);    // File in root
+    root = insert(root, "song.mp3", 1);      // File in root
+    root = insert(root, "vacation.jpg", 1);  // File in root
+
+    // Display the filesystem hierarchy
+    printf("Filesystem hierarchy:\n");
+    displayTree(root, 0);
+
+    // Search for a specific file or folder
+    char name[50];
+    printf("\nEnter name to search: ");
+    scanf("%s", name);
+
+    Node* result = search(root, name);
+    if (result != NULL) {
+        if (result->isFile) {
+            printf("%s is a file.\n", name);
+        } else {
+            printf("%s is a folder.\n", name);
+        }
+    } else {
+        printf("%s not found.\n", name);
+    }
+
+    // Free allocated memory
+    freeTree(root);
+    return 0;
+}
+
+// Function to create a new node (file or folder)
+Node* createNode(char* name, int isFile) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    strcpy(newNode->name, name);
+    newNode->isFile = isFile;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert a file or folder into the BST
+Node* insert(Node* root, char* name, int isFile) {
+    if (root == NULL) {
+        return createNode(name, isFile);
+    }
+    if (strcmp(name, root->name) < 0) {
+        root->left = insert(root->left, name, isFile);
+    } else if (strcmp(name, root->name) > 0) {
+        root->right = insert(root->right, name, isFile);
+    }
+    return root;
+}
+
+// Function to search for a file or folder in the BST
+Node* search(Node* root, char* name) {
+    if (root == NULL || strcmp(name, root->name) == 0) {
+        return root;
+    }
+    if (strcmp(name, root->name) < 0) {
+        return search(root->left, name);
+    }
+    return search(root->right, name);
+}
+
+// Function to display the filesystem hierarchy in an indented format
+void displayTree(Node* root, int level) {
+    if (root == NULL) return;
+    
+    displayTree(root->right, level + 1);
+    
+    for (int i = 0; i < level; i++) {
+        printf("\t");
+    }
+    
+    printf("|-- %s %s\n", root->name, root->isFile ? "(file)" : "(folder)");
+    
+    displayTree(root->left, level + 1);
+}
+
+// Function to free the memory allocated for the BST
+void freeTree(Node* root) {
+    if (root != NULL) {
+        freeTree(root->left);
+        freeTree(root->right);
+        free(root);
+    }
+}
